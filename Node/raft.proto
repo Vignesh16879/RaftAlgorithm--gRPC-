@@ -1,0 +1,71 @@
+// ╰─ python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. raft.proto
+syntax = "proto3";
+
+package RaftService;
+
+service RaftService {
+    rpc AppendEntry(HandleAppendEntryRequest) returns (HandleAppendEntryResponse);
+    rpc RequestVote(HandleRequestVoteRequest) returns (HandleRequestVoteResponse);
+    rpc ServeClient(HandleServeClientArgs) returns (HandleServeClientResponse);
+    rpc GetLeader() returns { LeaderInfo };
+}
+
+message LeaderInfo {
+    string term = 1;
+    string leader_id = 2;
+    string address = 3;
+}
+
+message LogEntry {
+    int32 log_index = 1;
+    string term = 2;
+    string operation = 3;
+}
+
+message AppendEntriesMessage {
+    string term = 1;
+    int32 leaderId = 2;
+    int32 prevLogIndex = 3;
+    int32 prevLogTerm = 4;
+    repeated LogEntry entries = 5;
+    int32 leaderCommit = 6;
+}
+
+message HandleAppendEntryRequest {
+    string term = 1;
+    string leader_id = 2;
+    int32 prev_log_index = 3;
+    int32 prev_log_term = 4;
+    repeated LogEntry log_entries = 5;
+    int32 leader_commit = 6;
+    int32 lease_duration = 7;
+}
+
+message HandleAppendEntryResponse {
+    string term = 1;
+    bool status = 2;
+}
+
+message HandleRequestVoteRequest {
+    string term = 1;
+    string candidate_id = 2;
+    int32 last_log_index = 3;
+    int32 last_log_term = 4;
+    int32 old_leader_lease_duration = 5;
+}
+
+message HandleRequestVoteResponse {
+    string term = 1;
+    bool vote_granted = 2;
+    int32 longest_old_leader_lease = 3;
+}
+
+message HandleServeClientArgs {
+    string request = 1;
+}
+
+message HandleServeClientResponse {
+    string data = 1;
+    string leader_id = 2;
+    bool status = 3;
+}
